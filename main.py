@@ -1,3 +1,6 @@
+#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
+#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
+
 import pygame
 pygame.init()
 
@@ -10,6 +13,7 @@ HEIGHT = WORLD_SIZE*BLOCK_SIZE
 
 world = []
 pacman = pygame.image.load('images/pacman.png')
+pacman_p=[1,1]
 
 char_to_image = {
     '.': 'images/dot.png',
@@ -18,12 +22,13 @@ char_to_image = {
 }
 
 
-
 with open('level-1.txt', 'w') as f:
     f.write('====================\n'
             '=................*.=\n'
             '==========.........=\n'
             '=....===......======\n'
+            '=..................=\n'
+            '=.......=====......=\n'
             '=..................=\n'
             '=.......=====......=\n'
             '====================\n')
@@ -44,16 +49,20 @@ def draw():
             if image:
                 img = pygame.image.load(char_to_image[block])
                 screen.blit(img, (x*BLOCK_SIZE, y*BLOCK_SIZE))
-    # pacman = pygame.image.load('images/pacman.png')
-    screen.blit(pacman, (1*BLOCK_SIZE, 1*BLOCK_SIZE))
+    screen.blit(pacman, (pacman_p[0]*BLOCK_SIZE, pacman_p[1]*BLOCK_SIZE))
 
 def on_key_down(key):
     if key[pygame.K_DOWN]:
-        # pacman.y += BLOCK_SIZE
-        screen.blit(pacman, (1 * BLOCK_SIZE, (1+1) * BLOCK_SIZE))
+        pacman_p[1] += 1
+    elif key[pygame.K_UP]:
+        pacman_p[1] -= 1
+    elif key[pygame.K_RIGHT]:
+        pacman_p[0] += 1
+    elif key[pygame.K_LEFT]:
+        pacman_p[0] -= 1
+        # world[pacman_p[1]][[0]] == "="
+
 load_level(1)
-draw()
-pygame.display.flip()
 for row in world: print(row)
 
 
@@ -65,6 +74,10 @@ while running:
         running = False
     keys = pygame.key.get_pressed()
     on_key_down(keys)
+
+    screen.fill((0,0,0))
+    draw()
+
     pygame.display.flip()
 
 pygame.quit()
