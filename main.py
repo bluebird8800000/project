@@ -13,12 +13,14 @@ HEIGHT = WORLD_SIZE*BLOCK_SIZE
 
 world = []
 pacman = pygame.image.load('images/pacman.png')
-pacman_p=[1,1]
+pacman_p = [1,1]
 
 char_to_image = {
     '.': 'images/dot.png',
     '=': 'images/wall.png',
     '*': 'images/power.png',
+    'g': 'images/ghost1.png',
+    'G': 'images/ghost2.png',
 }
 
 
@@ -27,9 +29,9 @@ with open('level-1.txt', 'w') as f:
             '=................*.=\n'
             '==========.........=\n'
             '=....===......======\n'
-            '=..................=\n'
+            '=.............g....=\n'
             '=.......=====......=\n'
-            '=..................=\n'
+            '=....G........==...=\n'
             '=.......=====......=\n'
             '====================\n')
 
@@ -53,14 +55,37 @@ def draw():
 
 def on_key_down(key):
     if key[pygame.K_DOWN]:
-        pacman_p[1] += 1
+        if world[pacman_p[1]+1][pacman_p[0]] != '=':
+            pacman_p[1] += 1
     elif key[pygame.K_UP]:
         pacman_p[1] -= 1
     elif key[pygame.K_RIGHT]:
         pacman_p[0] += 1
     elif key[pygame.K_LEFT]:
         pacman_p[0] -= 1
-        # world[pacman_p[1]][[0]] == "="
+
+# def update():
+#     if '=' not in blocks_ahead_of_pacman(pacman.dx, 0):
+#         pacman.x += pacman.dx
+#     if '=' not in blocks_ahead_of_pacman(0, pacman.dy):
+#         pacman.y += pacman.dy
+# def blocks_ahead_of_pacman(dx, dy):
+#     """Return a list of tiles at this position + (dx,dy)"""
+#     x = pacman.x + dx
+#     y = pacman.y + dy
+#
+#     ix,iy = int(x // BLOCK_SIZE), int(y // BLOCK_SIZE)
+#
+#     rx, ry = x % BLOCK_SIZE, y % BLOCK_SIZE
+#
+#     blocks = [ world[iy][ix] ]
+#     if rx: blocks.append(world[iy][ix+1])
+#     if ry: blocks.append(world[iy+1][ix])
+#     if rx and ry: blocks.append(world[iy+1][ix+1])
+#
+#     return blocks
+
+
 
 load_level(1)
 for row in world: print(row)
