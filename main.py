@@ -2,6 +2,9 @@
 #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
 
 import pygame
+from pgzero.actor import Actor
+import random
+
 pygame.init()
 
 screen = pygame.display.set_mode([640, 640])
@@ -13,26 +16,27 @@ HEIGHT = WORLD_SIZE*BLOCK_SIZE
 
 world = []
 pacman = pygame.image.load('images/pacman.png')
-pacman_p = [1,1]
+pacman_p = [1, 1]
+ghosts = []
 
 char_to_image = {
     '.': 'images/dot.png',
     '=': 'images/wall.png',
     '*': 'images/power.png',
-    'g': 'images/ghost1.png',
-    'G': 'images/ghost2.png',
+    'g': 'ghost1.png',
 }
 
 
 with open('level-1.txt', 'w') as f:
     f.write('====================\n'
-            '=................*.=\n'
-            '==========.........=\n'
+            '=..................=\n'
+            '=====...==.........=\n'
             '=....===......======\n'
-            '=.............g....=\n'
+            '=...g..............=\n'
             '=.......=====......=\n'
-            '=....G........==...=\n'
+            '=...==........==...=\n'
             '=.......=====......=\n'
+            '=..................=\n'
             '====================\n')
 
 def load_level(number):
@@ -58,38 +62,27 @@ def on_key_down(key):
         if world[pacman_p[1]+1][pacman_p[0]] != '=':
             pacman_p[1] += 1
     elif key[pygame.K_UP]:
-        pacman_p[1] -= 1
+        if world[pacman_p[1] - 1][pacman_p[0]] != '=':
+            pacman_p[1] -= 1
     elif key[pygame.K_RIGHT]:
-        pacman_p[0] += 1
+        if world[pacman_p[1]][pacman_p[0]+1] != '=':
+            pacman_p[0] += 1
     elif key[pygame.K_LEFT]:
-        pacman_p[0] -= 1
+        if world[pacman_p[1]][pacman_p[0]-1] != '=':
+            pacman_p[0] -= 1
 
-# def update():
-#     if '=' not in blocks_ahead_of_pacman(pacman.dx, 0):
-#         pacman.x += pacman.dx
-#     if '=' not in blocks_ahead_of_pacman(0, pacman.dy):
-#         pacman.y += pacman.dy
-# def blocks_ahead_of_pacman(dx, dy):
-#     """Return a list of tiles at this position + (dx,dy)"""
-#     x = pacman.x + dx
-#     y = pacman.y + dy
-#
-#     ix,iy = int(x // BLOCK_SIZE), int(y // BLOCK_SIZE)
-#
-#     rx, ry = x % BLOCK_SIZE, y % BLOCK_SIZE
-#
-#     blocks = [ world[iy][ix] ]
-#     if rx: blocks.append(world[iy][ix+1])
-#     if ry: blocks.append(world[iy+1][ix])
-#     if rx and ry: blocks.append(world[iy+1][ix+1])
-#
-#     return blocks
-
+def make_ghost_actors():
+    for y, row in enumerate(world):
+        for x, block in enumerate(row):
+            if block == 'g':
+                g = Actor(char_to_image[block], (x*BLOCK_SIZE, y*BLOCK_SIZE), anchor=('left', 'top')
+                world[y][x] = None
+                for g in ghosts: g.draw()
 
 
 load_level(1)
+make_ghost_actors()
 for row in world: print(row)
-
 
 
 running = True
