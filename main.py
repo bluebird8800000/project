@@ -1,7 +1,12 @@
 # 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
 
+#foodleft 숫자 안 바뀌는 문제 아직 해결 안함
+#pacman image rotation 해결 못함
+#https://www.pygame.org/docs/ref/rect.html
+
 import pygame
 from pgzero.actor import Actor
+from pgzero.rect import Rect
 import random
 
 pygame.init()
@@ -20,6 +25,10 @@ world = []
 pacman = pygame.image.load('images/pacman.png')
 pacman_p = [1, 1]
 ghosts = []
+ghost_start_pos = []
+
+clock = pygame.time.Clock()
+clock.tick(5)
 
 char_to_image = {
     '.': 'images/dot.png',
@@ -31,7 +40,7 @@ char_to_image = {
 
 with open('level-1.txt', 'w') as f:
     f.write('====================\n'
-            '=..................=\n'
+            '= .................=\n'
             '=====...==.........=\n'
             '=..................=\n'
             '=....===......======\n'
@@ -45,14 +54,11 @@ with open('level-1.txt', 'w') as f:
 
 def load_level(number):
     file = "level-%s.txt" % number
-    # food_left = 0
     with open(file) as f:
         for line in f:
             row = []
             for block in line:
                 row.append(block)
-                # if block == '.':
-                #     food_left += 1
             world.append(row)
 
 
@@ -83,19 +89,39 @@ def on_key_down(key):
             pacman_p[0] -= 1
 
 
-# def eat_food(key):
-#     if key[pygame.K_DOWN]:
-#         if world[pacman_p[1]+1][pacman_p[0]] == '.':
-#             food_left += 1
-#     elif key[pygame.K_UP]:
-#         if world[pacman_p[1] - 1][pacman_p[0]] == '.':
-#             pacman_p[1] -= 1
-#     elif key[pygame.K_RIGHT]:
-#         if world[pacman_p[1]][pacman_p[0]+1] == '.':
-#             pacman_p[0] += 1
-#     elif key[pygame.K_LEFT]:
-#         if world[pacman_p[1]][pacman_p[0]-1] == '.':
-#             pacman_p[0] -= 1
+# def food_count(number):
+#     file = "level-%s.txt" % number
+#     food_left = 0
+#     with open(file) as f:
+#         for line in f:
+#             for block in line:
+#                 if block == '.':
+#                     food_left += 1
+#     return int(food_left)
+
+
+def eat_food(key):
+    foodleft = 130
+    if key[pygame.K_DOWN]:
+        if world[pacman_p[1]][pacman_p[0]] == '.':
+            world[pacman_p[1]][pacman_p[0]] = None
+            foodleft -= 1
+            # print("Food Left:", foodleft)
+    elif key[pygame.K_UP]:
+        if world[pacman_p[1]][pacman_p[0]] == '.':
+            world[pacman_p[1]][pacman_p[0]] = None
+            foodleft -= 1
+            # print("Food Left:", foodleft)
+    elif key[pygame.K_RIGHT]:
+        if world[pacman_p[1]][pacman_p[0]] == '.':
+            world[pacman_p[1]][pacman_p[0]] = None
+            foodleft -= 1
+            # print("Food Left:", foodleft)
+    elif key[pygame.K_LEFT]:
+        if world[pacman_p[1]][pacman_p[0]] == '.':
+            world[pacman_p[1]][pacman_p[0]] = None
+            foodleft -= 1
+            # print("Food Left:", foodleft)
 
 
 load_level(1)
@@ -113,6 +139,7 @@ def make_ghost_actors():
                 world[y][x] = None
                 screen.blit(g._orig_surf, g.pos)
                 ghosts.append(g)
+                ghost_start_pos.append((x, y))
 
 
 def blocks_ahead_of(sprite, dx, dy):
@@ -146,6 +173,28 @@ def update():
             g.y += g.dy
         if not move_ahead(g):
             set_random_dir(g, GHOST_SPEED)
+        t = Rect(pacman_p[0]*BLOCK_SIZE, (pacman_p[0]+1)*BLOCK_SIZE, (pacman_p[1])*BLOCK_SIZE, (pacman_p[1]+1)*BLOCK_SIZE)
+        t_g = Rect(g.left, g.right, g.top, g.bottom)
+        if t_g.colliderect(t):
+            print(t_g, t)
+            reset_sprites()
+
+
+# def collision():
+#     for g in ghosts:
+#         t = Rect(pacman_p[0] * BLOCK_SIZE, (pacman_p[0] + 1) * BLOCK_SIZE, (pacman_p[1]) * BLOCK_SIZE,
+#              (pacman_p[1] + 1) * BLOCK_SIZE)
+#         t_g = Rect(g.left, g.right, g.top, g.bottom)
+#     if pacman_p[0] * BLOCK_SIZE <= g.left <= (pacman_p[0] + 1) * BLOCK_SIZE:
+#         reset_sprites()
+
+
+def reset_sprites():
+    pacman_p[1] = 1
+    pacman_p[0] = 1
+    for g, (x, y) in zip(ghosts, ghost_start_pos):
+        g.x = x*BLOCK_SIZE
+        g.y = y*BLOCK_SIZE
 
 
 def move_ahead(sprite):
@@ -173,7 +222,8 @@ while running:
     draw()
     update()
 
-    pygame.display.flip()
+    eat_food(keys)
 
+    pygame.display.flip()
 
 pygame.quit()
