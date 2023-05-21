@@ -1,8 +1,8 @@
 # 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
+# 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
 
-#foodleft 숫자 안 바뀌는 문제 아직 해결 안함
-#pacman image rotation 해결 못함
-#https://www.pygame.org/docs/ref/rect.html
+#foodleft count doesn't go down
+#pacman image rotation
 
 import pygame
 from pgzero.actor import Actor
@@ -26,6 +26,7 @@ pacman = pygame.image.load('images/pacman.png')
 pacman_p = [1, 1]
 ghosts = []
 ghost_start_pos = []
+foodleft = 0
 
 clock = pygame.time.Clock()
 clock.tick(5)
@@ -54,6 +55,8 @@ with open('level-1.txt', 'w') as f:
 
 def load_level(number):
     file = "level-%s.txt" % number
+    global foodleft
+    foodleft = 130
     with open(file) as f:
         for line in f:
             row = []
@@ -101,7 +104,7 @@ def on_key_down(key):
 
 
 def eat_food(key):
-    foodleft = 130
+    global foodleft
     if key[pygame.K_DOWN]:
         if world[pacman_p[1]][pacman_p[0]] == '.':
             world[pacman_p[1]][pacman_p[0]] = None
@@ -122,6 +125,10 @@ def eat_food(key):
             world[pacman_p[1]][pacman_p[0]] = None
             foodleft -= 1
             # print("Food Left:", foodleft)
+    print("Food Left:", foodleft)
+    if foodleft == 0:
+        print('CONGRATULATIONS!')
+        screen.draw.text('CONGRATULATIONS!', center=(WIDTH/2, HEIGHT/2), fontsize=120)
 
 
 load_level(1)
@@ -173,10 +180,16 @@ def update():
             g.y += g.dy
         if not move_ahead(g):
             set_random_dir(g, GHOST_SPEED)
-        t = Rect(pacman_p[0]*BLOCK_SIZE, (pacman_p[0]+1)*BLOCK_SIZE, (pacman_p[1])*BLOCK_SIZE, (pacman_p[1]+1)*BLOCK_SIZE)
-        t_g = Rect(g.left, g.right, g.top, g.bottom)
-        if t_g.colliderect(t):
-            print(t_g, t)
+        t = Rect((pacman_p[0])*BLOCK_SIZE, (pacman_p[0]+1)*BLOCK_SIZE, (pacman_p[1])*BLOCK_SIZE, (pacman_p[1]+1)*BLOCK_SIZE)
+        t_g = Rect(g.x, g.x+32, g.y, g.y+32)
+        t.size = (32, 32)
+        t_g.size = (32, 32)
+        t.top = (pacman_p[1])*BLOCK_SIZE
+        t_g.top = (g.y)
+        if t.colliderect(t_g):
+            # print(t, t_g)
+            # print(t.left, t.right, t.top, t.bottom)
+            # print(t_g.left, t_g.right, t_g.top, t_g.bottom)
             reset_sprites()
 
 
