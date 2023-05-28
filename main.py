@@ -1,13 +1,14 @@
-# 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
 # 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
 
-#foodleft count doesn't go down
-#pacman image rotation
+# rotate pacman
+# powerups
+# restart game when player presses space
 
 import pygame
 from pgzero.actor import Actor
 from pgzero.rect import Rect
 import random
+from pygame.locals import *
 
 pygame.init()
 
@@ -23,10 +24,18 @@ GHOST_SPEED = 1
 
 world = []
 pacman = pygame.image.load('images/pacman.png')
+
+pacman_right = pygame.image.load('images/pacman.png')
+pacman_left = pygame.image.load('images/pacman (left).png')
+pacman_up = pygame.image.load('images/pacman (up).png')
+pacman_down = pygame.image.load('images/pacman (down).png')
+# pacman = [pacman_right, pacman_left, pacman_up, pacman_down]
+
 pacman_p = [1, 1]
 ghosts = []
 ghost_start_pos = []
 foodleft = 0
+lives = 3
 
 clock = pygame.time.Clock()
 clock.tick(5)
@@ -65,7 +74,7 @@ def load_level(number):
             world.append(row)
 
 
-def draw():
+def draw(key):
     for y, row in enumerate(world):
         for x, block in enumerate(row):
             image = char_to_image.get(block, None)
@@ -78,29 +87,28 @@ def draw():
 
 
 def on_key_down(key):
+    global pacman
     if key[pygame.K_DOWN]:
+        # screen.blit(pacman_down, (pacman_p[0] * BLOCK_SIZE, pacman_p[1] * BLOCK_SIZE))
+        pacman = pacman_down
         if world[pacman_p[1]+1][pacman_p[0]] != '=':
             pacman_p[1] += 1
+            # p_d = 0
     elif key[pygame.K_UP]:
+        # screen.blit(pacman_up, (pacman_p[0] * BLOCK_SIZE, pacman_p[1] * BLOCK_SIZE))
+        pacman = pacman_up
         if world[pacman_p[1] - 1][pacman_p[0]] != '=':
             pacman_p[1] -= 1
     elif key[pygame.K_RIGHT]:
+        # screen.blit(pacman_right, (pacman_p[0] * BLOCK_SIZE, pacman_p[1] * BLOCK_SIZE))
+        pacman = pacman_right
         if world[pacman_p[1]][pacman_p[0]+1] != '=':
             pacman_p[0] += 1
     elif key[pygame.K_LEFT]:
+        # screen.blit(pacman_left, (pacman_p[0] * BLOCK_SIZE, pacman_p[1] * BLOCK_SIZE))
+        pacman = pacman_left
         if world[pacman_p[1]][pacman_p[0]-1] != '=':
             pacman_p[0] -= 1
-
-
-# def food_count(number):
-#     file = "level-%s.txt" % number
-#     food_left = 0
-#     with open(file) as f:
-#         for line in f:
-#             for block in line:
-#                 if block == '.':
-#                     food_left += 1
-#     return int(food_left)
 
 
 def eat_food(key):
@@ -109,26 +117,29 @@ def eat_food(key):
         if world[pacman_p[1]][pacman_p[0]] == '.':
             world[pacman_p[1]][pacman_p[0]] = None
             foodleft -= 1
-            # print("Food Left:", foodleft)
     elif key[pygame.K_UP]:
         if world[pacman_p[1]][pacman_p[0]] == '.':
             world[pacman_p[1]][pacman_p[0]] = None
             foodleft -= 1
-            # print("Food Left:", foodleft)
     elif key[pygame.K_RIGHT]:
         if world[pacman_p[1]][pacman_p[0]] == '.':
             world[pacman_p[1]][pacman_p[0]] = None
             foodleft -= 1
-            # print("Food Left:", foodleft)
     elif key[pygame.K_LEFT]:
         if world[pacman_p[1]][pacman_p[0]] == '.':
             world[pacman_p[1]][pacman_p[0]] = None
             foodleft -= 1
-            # print("Food Left:", foodleft)
     print("Food Left:", foodleft)
     if foodleft == 0:
-        print('CONGRATULATIONS!')
-        screen.draw.text('CONGRATULATIONS!', center=(WIDTH/2, HEIGHT/2), fontsize=120)
+        draw_text("CONGRATULATIONS!", text_font, (170, 255, 0), 20, 400)
+
+
+text_font = pygame.font.SysFont(None, 50)
+
+
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
 
 
 load_level(1)
@@ -185,21 +196,11 @@ def update():
         t.size = (32, 32)
         t_g.size = (32, 32)
         t.top = (pacman_p[1])*BLOCK_SIZE
-        t_g.top = (g.y)
+        t_g.top = g.y
         if t.colliderect(t_g):
-            # print(t, t_g)
-            # print(t.left, t.right, t.top, t.bottom)
-            # print(t_g.left, t_g.right, t_g.top, t_g.bottom)
+            global lives
+            lives -= 1
             reset_sprites()
-
-
-# def collision():
-#     for g in ghosts:
-#         t = Rect(pacman_p[0] * BLOCK_SIZE, (pacman_p[0] + 1) * BLOCK_SIZE, (pacman_p[1]) * BLOCK_SIZE,
-#              (pacman_p[1] + 1) * BLOCK_SIZE)
-#         t_g = Rect(g.left, g.right, g.top, g.bottom)
-#     if pacman_p[0] * BLOCK_SIZE <= g.left <= (pacman_p[0] + 1) * BLOCK_SIZE:
-#         reset_sprites()
 
 
 def reset_sprites():
@@ -211,14 +212,21 @@ def reset_sprites():
 
 
 def move_ahead(sprite):
-    # Record current pos, so we can see if the sprite moved
     oldx, oldy = sprite.x, sprite.y
     if '=' not in blocks_ahead_of(sprite, sprite.dx, 0):
         sprite.x += sprite.dx
     if '=' not in blocks_ahead_of(sprite, 0, sprite.dy):
         sprite.y += sprite.dy
-    # Return whether we moved
     return oldx != sprite.x or oldy != sprite.y
+
+
+def game_over_screen():
+    if lives == 0:
+        screen.fill((0, 0, 0))
+        font = pygame.font.SysFont(None, 100)
+        title = font.render('GAME OVER', True, (255, 0, 0))
+        screen.blit(title, (100, 250))
+        pygame.display.update()
 
 
 running = True
@@ -230,9 +238,12 @@ while running:
     on_key_down(keys)
 
     screen.fill((0, 0, 0))
+    draw_text("FOOD LEFT: " + str(foodleft), text_font, (255, 255, 255), 20, 500)
+    draw_text("LIVES: " + str(lives), text_font, (255, 255, 255), 20, 450)
 
     make_ghost_actors()
-    draw()
+    draw(keys)
+    game_over_screen()
     update()
 
     eat_food(keys)
