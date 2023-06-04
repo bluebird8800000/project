@@ -1,6 +1,6 @@
 # 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
+# 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
 
-# rotate pacman
 # powerups
 # restart game when player presses space
 
@@ -35,6 +35,7 @@ pacman_p = [1, 1]
 ghosts = []
 ghost_start_pos = []
 foodleft = 0
+powerleft = 1
 lives = 3
 
 clock = pygame.time.Clock()
@@ -130,8 +131,34 @@ def eat_food(key):
             world[pacman_p[1]][pacman_p[0]] = None
             foodleft -= 1
     print("Food Left:", foodleft)
+    # if foodleft == 0:
+    #     draw_text("CONGRATULATIONS!", text_font, (170, 255, 0), 20, 400)
+
+
+# def eat_power(key):
+#     global powerleft
+#     if key[pygame.K_DOWN]:
+#         if world[pacman_p[1]][pacman_p[0]] == '*':
+#             world[pacman_p[1]][pacman_p[0]] = None
+#
+#     elif key[pygame.K_UP]:
+#         if world[pacman_p[1]][pacman_p[0]] == '*':
+#             world[pacman_p[1]][pacman_p[0]] = None
+#     elif key[pygame.K_RIGHT]:
+#         if world[pacman_p[1]][pacman_p[0]] == '*':
+#             world[pacman_p[1]][pacman_p[0]] = None
+#     elif key[pygame.K_LEFT]:
+#         if world[pacman_p[1]][pacman_p[0]] == '*':
+#             world[pacman_p[1]][pacman_p[0]] = None
+
+
+def congratulations_screen():
     if foodleft == 0:
-        draw_text("CONGRATULATIONS!", text_font, (170, 255, 0), 20, 400)
+        screen.fill((0, 0, 0))
+        font = pygame.font.SysFont(None, 60)
+        title = font.render('CONGRATULATIONS!', True, (170, 255, 0))
+        screen.blit(title, (100, 250))
+        pygame.display.update()
 
 
 text_font = pygame.font.SysFont(None, 50)
@@ -200,6 +227,7 @@ def update():
         if t.colliderect(t_g):
             global lives
             lives -= 1
+            draw_text("OUCH!", text_font, (255, 0, 0), 20, 400)
             reset_sprites()
 
 
@@ -228,6 +256,11 @@ def game_over_screen():
         screen.blit(title, (100, 250))
         pygame.display.update()
 
+# def game_restart(key):
+#     global lives
+#     if key[pygame.K_SPACE]:
+
+
 
 running = True
 while running:
@@ -243,11 +276,15 @@ while running:
 
     make_ghost_actors()
     draw(keys)
+    congratulations_screen()
     game_over_screen()
+
     update()
 
     eat_food(keys)
+    # eat_power(keys)
 
     pygame.display.flip()
 
+# game_restart(keys)
 pygame.quit()
